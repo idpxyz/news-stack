@@ -1,5 +1,5 @@
 from django.db import models
-from wagtail.models import Page, Orderable
+from wagtail.models import Page, Orderable, Site
 from wagtail.fields import StreamField
 from wagtail.blocks import StructBlock, IntegerBlock, BooleanBlock, ChoiceBlock, CharBlock
 from wagtail.snippets.blocks import SnippetChooserBlock
@@ -43,9 +43,17 @@ class HomePage(Page):
         from django.utils import timezone
         from datetime import timedelta
         ctx=super().get_context(request)
-        site_root=request.site.root_page
+        
+        # 获取站点
+        site = Site.find_for_request(request) or Site.objects.filter(is_default_site=True).first()
+        if not site:
+            ctx["featured"] = []
+            ctx["modules"] = []
+            return ctx
+            
+        site_root=site.root_page
         selected_ids=set()
-        settings=HomeToggles.for_site(request.site)
+        settings=HomeToggles.for_site(site)
         manual=[fi.article.specific for fi in self.featured_items.select_related("article")]
         manual=[a for a in manual if a.is_descendant_of(site_root)]
         selected_ids|={a.id for a in manual}
