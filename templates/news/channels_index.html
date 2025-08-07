@@ -1,0 +1,2 @@
+{% extends "base.html" %}
+{% block content %}<h1>频道</h1><ul class="channels">{% for ch in channels %}<li><a href="{{ page.url }}{{ ch.slug }}/">{{ ch.name }}</a></li>{% endfor %}</ul>{% endblock %}

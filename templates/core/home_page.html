@@ -1,0 +1,16 @@
+{% extends "base.html" %}{% load cache wagtailcore_tags wagtailimages_tags %}
+{% block content %}
+{% if featured %}
+<section class="home-featured"><h2>精选</h2>
+<ul class="cards">{% for a in featured %}
+<li class="card"><a href="{{ a.url }}">{% if a.hero_image %}{% image a.hero_image fill-600x338 %}{% endif %}<h3>{{ a.title }}</h3></a></li>
+{% endfor %}</ul></section>{% endif %}
+{% for m in modules %}{% cache 300 "home" request.site.id m.title m.sig %}
+<section class="home-module"><h2>{{ m.title }}</h2>
+<ul class="cards">{% for a in m.items %}
+<li class="card"><a href="{{ a.url }}">{% if a.hero_image %}{% image a.hero_image fill-400x225 %}{% endif %}<h3>{{ a.title }}</h3></a></li>
+{% endfor %}</ul>
+<div hx-get="{% url 'more-items' %}?t={{ m.title|urlencode }}" hx-trigger="revealed" hx-swap="outerHTML" class="lazy-placeholder">加载更多...</div>
+</section>{% endcache %}{% endfor %}
+<section><div id="react-island-root" data-message="来自 React 岛的小组件"></div></section>
+{% endblock %}
