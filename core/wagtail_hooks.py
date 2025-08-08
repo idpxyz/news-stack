@@ -3,7 +3,7 @@ from django.core.cache import caches
 from django.core.cache.utils import make_template_fragment_key
 from .models import HomeToggles
 
-@hooks.register("after_publish_page")
+@hooks.register("after_publish_page") # 发布页面后清除首页缓存
 def purge_home_cache_on_publish(request, page):
     cache=caches["default"]
     try:
@@ -17,7 +17,7 @@ def purge_home_cache_on_publish(request, page):
         modules=getattr(home,"modules",[])
     except Exception:
         modules=[]
-    settings=HomeToggles.for_site(site)
+    settings=HomeToggles.for_site(site) #
     for block in modules:
         b=block.value
         title=b.get("title") or getattr(b.get("channel"),"name",None)

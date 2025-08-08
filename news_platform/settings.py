@@ -19,7 +19,7 @@ INSTALLED_APPS = [
     "wagtail.users","wagtail.snippets","wagtail.documents","wagtail.images",
     "wagtail.search","wagtail.admin","wagtail","modelcluster","taggit",
     "wagtail.contrib.settings",
-    "core","news","authapp","portal",
+    "core","news","authapp","portal","community",
 ]
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
@@ -49,6 +49,7 @@ if db_url:
                                "USER":o.username,"PASSWORD":o.password,"HOST":o.hostname,"PORT":o.port or 5432}
 STATIC_URL="/static/"
 STATICFILES_DIRS=[BASE_DIR/"static"]
+STATIC_ROOT=BASE_DIR/"staticfiles"
 MEDIA_URL="/media/"
 MEDIA_ROOT=BASE_DIR/"media"
 WAGTAIL_SITE_NAME="News Platform"

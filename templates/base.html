@@ -4,8 +4,11 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
+    
     <title>{% block title %}{{ page.title }}{% endblock %} - 新闻平台</title>
+    
     <link rel="stylesheet" href="{% static 'site.css' %}">
+    
     <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script defer src="{% static 'react-island.js' %}"></script>
@@ -14,23 +17,50 @@
 <body>
     
     <header class="site-header">
-        <a class="brand" href="/">
-            新闻平台
-        </a>
-        <nav><a href="/">首页</a> | <a href="/channels/">频道</a> | <a href="/admin/">Admin</a></nav>
-        <div class="auth-links">
-            {% if request.user.is_authenticated %}
-                <span>Hi, {{ request.user.username }}</span> | <a href="{% url 'auth-logout' %}">退出</a>
-            {% else %}
-                <a href="{% url 'auth-login' %}">登录</a>
-            {% endif %}
+        <div class="container">
+            <a class="brand" href="/">
+                党报头条
+            </a>
+            
+            <nav>
+                <a href="/">首页</a>
+                <a href="/channels/">频道</a>
+                <a href="/admin/">Admin</a>
+            </nav>
+            
+            <div class="auth-links">
+                {% if request.user.is_authenticated %}
+                    <span>Hi, {{ request.user.username }}</span>
+                    <a href="{% url 'auth-logout' %}">退出</a>
+                {% else %}
+                    <a href="{% url 'auth-login' %}">登录</a>
+                {% endif %}
+            </div>
         </div>
     </header>
     
-    <main class="container">
+    <main>
         {% block content %}{% endblock %}
     </main>
     
-    <footer class="site-footer">© 新闻平台</footer>
+    <footer class="site-footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h3>联系我们</h3>
+                    <p>邮箱: <a href="mailto:contact@example.com">contact@example.com</a></p>
+                    <p>电话: +86 123 4567 8900</p>
+                </div>
+                <div class="footer-section">
+                    <h3>关注我们</h3>
+                    <p><a href="#">微博</a></p>
+                    <p><a href="#">微信</a></p>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2025 新闻平台. 保留所有权利.</p>
+            </div>
+        </div>
+    </footer>
 </body>
 </html>

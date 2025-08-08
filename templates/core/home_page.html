@@ -1,16 +1,213 @@
-{% extends "base.html" %}{% load cache wagtailcore_tags wagtailimages_tags %}
+{% extends "base.html" %}
+{% load static wagtailcore_tags wagtailimages_tags %}
+
 {% block content %}
-{% if featured %}
-<section class="home-featured"><h2>精选</h2>
-<ul class="cards">{% for a in featured %}
-<li class="card"><a href="{{ a.url }}">{% if a.hero_image %}{% image a.hero_image fill-600x338 %}{% endif %}<h3>{{ a.title }}</h3></a></li>
-{% endfor %}</ul></section>{% endif %}
-{% for m in modules %}{% cache 300 "home" request.site.id m.title m.sig %}
-<section class="home-module"><h2>{{ m.title }}</h2>
-<ul class="cards">{% for a in m.items %}
-<li class="card"><a href="{{ a.url }}">{% if a.hero_image %}{% image a.hero_image fill-400x225 %}{% endif %}<h3>{{ a.title }}</h3></a></li>
-{% endfor %}</ul>
-<div hx-get="{% url 'more-items' %}?t={{ m.title|urlencode }}" hx-trigger="revealed" hx-swap="outerHTML" class="lazy-placeholder">加载更多...</div>
-</section>{% endcache %}{% endfor %}
-<section><div id="react-island-root" data-message="来自 React 岛的小组件"></div></section>
+<!-- 英雄区域 -->
+<section class="hero-section">
+    <div class="hero-slider">
+        {% for article in featured %}
+        <div class="hero-slide">
+            {% if article.hero_image %}
+            <div class="hero-image">
+                {% image article.hero_image fill-1200x600 %}
+            </div>
+            {% endif %}
+            <div class="hero-content">
+                <div class="hero-meta">
+                    <span class="category">{{ article.channels.first.name|default:"新闻" }}</span>
+                    <span class="date">{{ article.date|date:"M d, Y" }}</span>
+                </div>
+                <h1 class="hero-title">{{ article.title }}</h1>
+                <p class="hero-excerpt">{{ article.specific.body|truncatewords:20 }}</p>
+                <a href="{{ article.url }}" class="hero-link">阅读更多</a>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</section>
+
+<!-- 主要内容区域 -->
+<div class="main-content">
+    <div class="container">
+        <div class="content-grid">
+            <!-- 左侧内容 -->
+            <div class="content-main">
+                <!-- 新闻分类标签 -->
+                <div class="news-tabs">
+                    <button class="tab-btn active" data-category="all">全部</button>
+                    <button class="tab-btn" data-category="brand">品牌</button>
+                    <button class="tab-btn" data-category="agency">代理</button>
+                    <button class="tab-btn" data-category="creative">创意</button>
+                    <button class="tab-btn" data-category="digital">数字</button>
+                    <button class="tab-btn" data-category="media">媒体</button>
+                </div>
+
+                <!-- 最新新闻 -->
+                <section class="news-section">
+                    <h2 class="section-title">最新新闻</h2>
+                    <div class="news-grid">
+                        {% for article in modules.0.items %}
+                        <article class="news-item">
+                            {% if article.hero_image %}
+                            <div class="news-image">
+                                {% image article.hero_image fill-400x250 %}
+                            </div>
+                            {% endif %}
+                            <div class="news-content">
+                                <div class="news-meta">
+                                    <span class="category">{{ article.channels.first.name|default:"新闻" }}</span>
+                                    <span class="date">{{ article.date|date:"M d" }}</span>
+                                </div>
+                                <h3 class="news-title">
+                                    <a href="{{ article.url }}">{{ article.title }}</a>
+                                </h3>
+                                <p class="news-excerpt">{{ article.specific.body|truncatewords:15 }}</p>
+                            </div>
+                        </article>
+                        {% endfor %}
+                    </div>
+                </section>
+
+                <!-- 创意作品展示 -->
+                <section class="creative-works">
+                    <h2 class="section-title">创意作品</h2>
+                    <div class="works-grid">
+                        {% for work in creative_works %}
+                        <div class="work-item">
+                            {% if work.hero_image %}
+                            <div class="work-image">
+                                {% image work.hero_image fill-300x200 %}
+                            </div>
+                            {% endif %}
+                            <div class="work-info">
+                                <h3 class="work-title">
+                                    <a href="{{ work.url }}">{{ work.title }}</a>
+                                </h3>
+                                <p class="work-agency">{{ work.agency }}</p>
+                                <p class="work-client">{{ work.client }}</p>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </section>
+
+                <!-- 行业活动 -->
+                <section class="events-section">
+                    <h2 class="section-title">即将举行的活动</h2>
+                    <div class="events-list">
+                        {% for event in upcoming_events %}
+                        <div class="event-item">
+                            <div class="event-date">
+                                <span class="day">{{ event.event_date|date:"d" }}</span>
+                                <span class="month">{{ event.event_date|date:"M" }}</span>
+                            </div>
+                            <div class="event-info">
+                                <h3 class="event-title">
+                                    <a href="{{ event.url }}">{{ event.title }}</a>
+                                </h3>
+                                <p class="event-location">{{ event.location }}</p>
+                                <p class="event-organizer">{{ event.organizer }}</p>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </section>
+            </div>
+
+            <!-- 右侧边栏 -->
+            <div class="content-sidebar">
+                <!-- 热门话题 -->
+                <div class="sidebar-widget">
+                    <h3 class="widget-title">热门话题</h3>
+                    <div class="trending-topics">
+                        <a href="#" class="topic-tag">#数字营销</a>
+                        <a href="#" class="topic-tag">#创意设计</a>
+                        <a href="#" class="topic-tag">#品牌策略</a>
+                        <a href="#" class="topic-tag">#社交媒体</a>
+                        <a href="#" class="topic-tag">#广告创意</a>
+                    </div>
+                </div>
+
+                <!-- 最新讨论 -->
+                <div class="sidebar-widget">
+                    <h3 class="widget-title">最新讨论</h3>
+                    <div class="discussions-list">
+                        {% for discussion in latest_discussions %}
+                        <div class="discussion-item">
+                            <h4 class="discussion-title">
+                                <a href="#">{{ discussion.title }}</a>
+                            </h4>
+                            <div class="discussion-meta">
+                                <span class="author">{{ discussion.author.username }}</span>
+                                <span class="replies">{{ discussion.replies_count }} 回复</span>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <!-- 研究报告 -->
+                <div class="sidebar-widget">
+                    <h3 class="widget-title">最新报告</h3>
+                    <div class="reports-list">
+                        {% for report in latest_reports %}
+                        <div class="report-item">
+                            <h4 class="report-title">
+                                <a href="{{ report.url }}">{{ report.title }}</a>
+                            </h4>
+                            <p class="report-author">{{ report.author }}</p>
+                            {% if report.is_free %}
+                            <span class="report-free">免费</span>
+                            {% endif %}
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <!-- 订阅区域 -->
+                <div class="sidebar-widget newsletter-widget">
+                    <h3 class="widget-title">订阅我们的新闻</h3>
+                    <p class="widget-description">获取最新的行业新闻和创意灵感</p>
+                    <form class="newsletter-form">
+                        <input type="email" placeholder="输入您的邮箱地址" class="newsletter-input">
+                        <button type="submit" class="newsletter-btn">订阅</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 底部特色内容 -->
+<section class="featured-section">
+    <div class="container">
+        <h2 class="section-title">精选内容</h2>
+        <div class="featured-grid">
+            {% for module in modules %}
+            {% if forloop.counter > 1 %}
+            <div class="featured-module">
+                <h3 class="module-title">{{ module.title }}</h3>
+                <div class="module-items">
+                    {% for item in module.items %}
+                    <div class="module-item">
+                        {% if item.hero_image %}
+                        <div class="item-image">
+                            {% image item.hero_image fill-200x150 %}
+                        </div>
+                        {% endif %}
+                        <div class="item-content">
+                            <h4 class="item-title">
+                                <a href="{{ item.url }}">{{ item.title }}</a>
+                            </h4>
+                            <span class="item-date">{{ item.date|date:"M d" }}</span>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+            {% endfor %}
+        </div>
+    </div>
+</section>
 {% endblock %}
