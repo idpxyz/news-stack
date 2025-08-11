@@ -1,0 +1,98 @@
+{% extends "base.html" %}
+{% load wagtailcore_tags wagtailimages_tags %}
+
+{% block title %}{{ article.title }} - 党报头条{% endblock %}
+
+{% block content %}
+<div class="container">
+    <article class="article-detail">
+        <!-- 文章头部 -->
+        <header class="article-header">
+            <div class="article-meta">
+                {% if article.channels.all %}
+                    <span class="article-category">
+                        {{ article.channels.first.name }}
+                    </span>
+                {% endif %}
+                <time class="article-date" datetime="{{ article.date|date:'c' }}">
+                    {{ article.date|date:'Y年m月d日' }}
+                </time>
+            </div>
+            
+            <h1 class="article-title">{{ article.title }}</h1>
+            
+            {% if article.hero_image %}
+                <div class="article-hero-image">
+                    {% image article.hero_image fill-800x450 %}
+                </div>
+            {% endif %}
+        </header>
+
+        <!-- 文章内容 -->
+        <div class="article-content">
+            {% if article.body %}
+                {% for block in article.body %}
+                    {% if block.block_type == 'heading' %}
+                        <h2>{{ block.value }}</h2>
+                    {% elif block.block_type == 'paragraph' %}
+                        <p>{{ block.value }}</p>
+                    {% elif block.block_type == 'image' %}
+                        <div class="article-image">
+                            {% image block.value fill-600x400 %}
+                        </div>
+                    {% endif %}
+                {% endfor %}
+            {% else %}
+                <p>文章内容正在编辑中...</p>
+            {% endif %}
+        </div>
+
+        <!-- 文章标签 -->
+        {% if article.tags.all %}
+            <div class="article-tags">
+                <h3>标签：</h3>
+                <div class="tags-list">
+                    {% for tag in article.tags.all %}
+                        <span class="tag">{{ tag.name }}</span>
+                    {% endfor %}
+                </div>
+            </div>
+        {% endif %}
+    </article>
+
+    <!-- 相关文章 -->
+    {% if related_articles %}
+        <section class="related-articles">
+            <h3 class="section-title">相关文章</h3>
+            <div class="related-grid">
+                {% for related in related_articles %}
+                    <article class="related-item">
+                        <div class="related-image">
+                            {% if related.hero_image %}
+                                {% image related.hero_image fill-200x150 %}
+                            {% else %}
+                                <div class="related-placeholder">
+                                    <i class="fas fa-newspaper"></i>
+                                </div>
+                            {% endif %}
+                        </div>
+                        <div class="related-content">
+                            <h4 class="related-title">
+                                <a href="/article/{{ related.slug }}/">{{ related.title }}</a>
+                            </h4>
+                            <div class="related-meta">
+                                <span class="related-category">
+                                    {{ related.channels.first.name|default:"新闻" }}
+                                </span>
+                                <span class="related-date">
+                                    {{ related.date|date:"M d" }}
+                                </span>
+                            </div>
+                        </div>
+                    </article>
+                {% endfor %}
+            </div>
+        </section>
+    {% endif %}
+</div>
+{% endblock %} 

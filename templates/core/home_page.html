@@ -53,7 +53,7 @@
                                             <span class="slide-time">{{ article.date|date:"M d, Y" }}</span>
                                         </div>
                                         <h3 class="slide-title">
-                                            <a href="{{ article.url }}">{{ article.title }}</a>
+                                            <a href="{{ article.custom_url }}">{{ article.title }}</a>
                                         </h3>
                                         <div class="slide-author">
                                             <span class="author-name">编辑</span>
@@ -102,7 +102,7 @@
                                 </div>
                                 <div class="news-grid-content">
                                     <h4 class="news-grid-title">
-                                        <a href="{{ article.url }}">{{ article.title }}</a>
+                                        <a href="{{ article.custom_url }}">{{ article.title }}</a>
                                     </h4>
                                     <div class="news-grid-meta">
                                         <span class="news-grid-category">{{ article.channels.first.name|default:"新闻" }}</span>
@@ -138,7 +138,7 @@
                                         <span class="category">{{ article.channels.first.name|default:"新闻" }}</span>
                                     </div>
                                     <h4 class="news-title">
-                                        <a href="{{ article.url }}">{{ article.title }}</a>
+                                        <a href="{{ article.custom_url }}">{{ article.title }}</a>
                                     </h4>
                                 </div>
                             </article>
@@ -218,7 +218,7 @@
                         <div class="popular-item">
                             <span class="popular-category">{{ article.channels.first.name|default:"新闻" }}</span>
                             <h4 class="popular-title">
-                                <a href="{{ article.url }}">{{ article.title }}</a>
+                                <a href="{{ article.custom_url }}">{{ article.title }}</a>
                             </h4>
                         </div>
                         {% endfor %}

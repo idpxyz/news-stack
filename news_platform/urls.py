@@ -17,5 +17,7 @@ urlpatterns = [
     path("api/portal", portal.views.api_portal, name="api-portal"),
     path("search/", portal.views.search_view, name="search"),
     path("fragments/more-items/", TemplateView.as_view(template_name="fragments/more_items.html"), name="more-items"),
+    path("article/<slug:slug>/", portal.views.article_detail, name="article-detail"),  # 文章详情页
+    path("channels/", portal.views.channels_view, name="channels"),  # 频道列表页
     path("wagtail/", include(wagtail_urls)),  # 将Wagtail URL移到子路径
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

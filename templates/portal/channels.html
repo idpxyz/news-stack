@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}频道分类 - 新闻平台{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="channels-header">
+        <h1 class="page-title">频道分类</h1>
+        <p class="page-subtitle">浏览不同主题的新闻和内容</p>
+    </div>
+
+    <div class="channels-content">
+        <div class="channels-grid">
+            {% for channel in channels %}
+            <div class="channel-card">
+                <div class="channel-icon">
+                    {% if channel.icon %}
+                        <i class="{{ channel.icon }}"></i>
+                    {% else %}
+                        <i class="fas fa-tag"></i>
+                    {% endif %}
+                </div>
+                
+                <div class="channel-info">
+                    <h3 class="channel-name">
+                        <a href="{% url 'channels' %}?channel={{ channel.slug }}">{{ channel.name }}</a>
+                    </h3>
+                    
+                    {% if channel.description %}
+                        <p class="channel-description">{{ channel.description }}</p>
+                    {% endif %}
+                    
+                    <div class="channel-meta">
+                        <span class="channel-type">{{ channel.get_category_type_display }}</span>
+                        <div class="channel-stats">
+                            {% if channel.article_count > 0 %}
+                                <span class="stat-item">
+                                    <i class="fas fa-newspaper"></i>
+                                    {{ channel.article_count }} 文章
+                                </span>
+                            {% endif %}
+                            {% if channel.creative_count > 0 %}
+                                <span class="stat-item">
+                                    <i class="fas fa-palette"></i>
+                                    {{ channel.creative_count }} 创意
+                                </span>
+                            {% endif %}
+                            {% if channel.event_count > 0 %}
+                                <span class="stat-item">
+                                    <i class="fas fa-calendar"></i>
+                                    {{ channel.event_count }} 活动
+                                </span>
+                            {% endif %}
+                            {% if channel.report_count > 0 %}
+                                <span class="stat-item">
+                                    <i class="fas fa-chart-bar"></i>
+                                    {{ channel.report_count }} 报告
+                                </span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+            <div class="empty-state">
+                <p>暂无频道内容</p>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %} 

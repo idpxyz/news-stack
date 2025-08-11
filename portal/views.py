@@ -28,6 +28,31 @@ def home_view(request):
     # 获取频道
     channels = Channel.objects.filter(is_active=True).order_by('name')
     
+    # 调试信息
+    print(f"Found {featured_articles.count()} featured articles")
+    print(f"Found {latest_news.count()} latest news")
+    
+    # 为文章添加自定义URL属性
+    for article in featured_articles:
+        try:
+            print(f"Article: {article.title}, Slug: {article.slug}, ID: {article.id}")
+            # 直接使用基于slug的URL，这是最可靠的方法
+            article.custom_url = f"/article/{article.slug}/"
+            print(f"Set custom_url: {article.custom_url}")
+        except Exception as e:
+            print(f"Error setting URL for article {article.id}: {e}")
+            article.custom_url = "#"
+    
+    for article in latest_news:
+        try:
+            print(f"Article: {article.title}, Slug: {article.slug}, ID: {article.id}")
+            # 直接使用基于slug的URL，这是最可靠的方法
+            article.custom_url = f"/article/{article.slug}/"
+            print(f"Set custom_url: {article.custom_url}")
+        except Exception as e:
+            print(f"Error setting URL for article {article.id}: {e}")
+            article.custom_url = "#"
+    
     context = {
         'featured': featured_articles,
         'modules': [{'title': '最新新闻', 'items': latest_news}],
@@ -169,3 +194,49 @@ def search_view(request):
     }
     
     return render(request, 'search_results.html', context)
+
+def channels_view(request):
+    """频道列表页面"""
+    # 获取所有活跃的频道
+    channels = Channel.objects.filter(is_active=True).order_by('name')
+    
+    # 为每个频道获取文章数量
+    for channel in channels:
+        channel.article_count = channel.articles.count()
+        channel.creative_count = channel.creative_works.count()
+        channel.event_count = channel.events.count()
+        channel.report_count = channel.reports.count()
+    
+    context = {
+        'channels': channels,
+    }
+    
+    return render(request, 'portal/channels.html', context)
+
+def article_detail(request, slug):
+    """文章详情页视图"""
+    try:
+        # 根据slug获取文章
+        article = ArticlePage.objects.get(slug=slug)
+        
+        # 获取相关文章
+        related_articles = ArticlePage.objects.filter(
+            channels__in=article.channels.all()
+        ).exclude(id=article.id).order_by('-date')[:4]
+        
+        context = {
+            'article': article,
+            'related_articles': related_articles,
+        }
+        
+        return render(request, 'news/article_detail.html', context)
+        
+    except ArticlePage.DoesNotExist:
+        # 如果文章不存在，返回404
+        from django.shortcuts import get_object_or_404
+        return get_object_or_404(ArticlePage, slug=slug)
+    except Exception as e:
+        # 其他错误
+        print(f"Error in article_detail view: {e}")
+        from django.http import Http404
+        raise Http404("文章不存在")

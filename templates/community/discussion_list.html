@@ -41,8 +41,8 @@
                         </div>
                     </div>
                     
-                    <div class="discussion-content">
-                        <p>{{ discussion.content|truncatewords:30 }}</p>
+                    <div class="discussion-content markdown-content">
+                        {{ discussion.content_preview|safe }}
                     </div>
                     
                     <div class="discussion-footer">

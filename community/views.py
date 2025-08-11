@@ -5,8 +5,43 @@ from django.http import JsonResponse
 from django.views.decorators.http import require_POST
 from django.core.paginator import Paginator
 from django.db.models import Q, Count, F
+from django.utils import timezone
+import markdown
 from .models import Discussion, Comment, Like, Tag
 from django.contrib.auth.models import User
+
+def markdown_to_html(text):
+    """将Markdown文本转换为HTML"""
+    if not text:
+        return ''
+    
+    md = markdown.Markdown(
+        extensions=[
+            'markdown.extensions.fenced_code',
+            'markdown.extensions.tables',
+            'markdown.extensions.nl2br',
+        ]
+    )
+    return md.convert(str(text))
+
+def markdown_to_preview(text, max_length=200):
+    """将Markdown文本转换为适合预览的HTML，只保留基本格式"""
+    if not text:
+        return ''
+    
+    # 截取文本
+    if len(text) > max_length:
+        preview_text = text[:max_length] + '...'
+    else:
+        preview_text = text
+    
+    # 只使用基本的Markdown扩展，适合预览
+    md = markdown.Markdown(
+        extensions=[
+            'markdown.extensions.nl2br',  # 换行转<br>
+        ]
+    )
+    return md.convert(str(preview_text))
 
 def discussion_list(request):
     """讨论列表页面"""
@@ -34,6 +69,11 @@ def discussion_list(request):
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
     
+    # 为列表中的讨论内容添加Markdown处理
+    for discussion in page_obj.object_list:
+        # 为预览内容添加HTML版本
+        discussion.content_preview = markdown_to_preview(discussion.content, 200)
+    
     # 获取热门标签
     popular_tags = Tag.objects.all()[:10]
     
@@ -57,6 +97,13 @@ def discussion_detail(request, discussion_id):
     user_liked = False
     if request.user.is_authenticated:
         user_liked = discussion.likes.filter(user=request.user).exists()
+    
+    # 处理Markdown内容
+    discussion.content_html = markdown_to_html(discussion.content)
+    
+    # 处理评论的Markdown内容
+    for comment in comments:
+        comment.content_html = markdown_to_html(comment.content)
     
     context = {
         'discussion': discussion,
@@ -110,7 +157,7 @@ def add_comment(request, discussion_id):
                 'success': True,
                 'comment': {
                     'id': comment.id,
-                    'content': comment.content,
+                    'content': markdown_to_html(comment.content),
                     'author': comment.author.username,
                     'created_at': comment.created_at.strftime('%Y-%m-%d %H:%M'),
                 }
