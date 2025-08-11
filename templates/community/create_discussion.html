@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}发起讨论 - 社区讨论{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="create-discussion">
+        <div class="page-header">
+            <h1 class="page-title">发起讨论</h1>
+            <p class="page-subtitle">分享你的想法，与行业同仁交流</p>
+        </div>
+
+        <div class="form-container">
+            <form method="post" class="discussion-form">
+                {% csrf_token %}
+                
+                <div class="form-group">
+                    <label for="title" class="form-label">讨论标题 *</label>
+                    <input type="text" id="title" name="title" class="form-input" required 
+                           placeholder="请输入讨论标题..." maxlength="200">
+                    <small class="form-help">标题应该简洁明了，能够概括讨论的核心内容</small>
+                </div>
+
+                <div class="form-group">
+                    <label for="content" class="form-label">讨论内容 *</label>
+                    <textarea id="content" name="content" class="form-textarea" required 
+                              placeholder="详细描述你的想法、问题或观点..." rows="8"></textarea>
+                    <small class="form-help">支持 Markdown 格式，可以添加链接、列表等</small>
+                </div>
+
+                <div class="form-group">
+                    <label for="tags" class="form-label">标签</label>
+                    <input type="text" id="tags" name="tags" class="form-input" 
+                           placeholder="输入标签，用逗号分隔，如：数字营销,创意设计,品牌策略">
+                    <small class="form-help">添加相关标签有助于其他用户发现你的讨论</small>
+                </div>
+
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">发布讨论</button>
+                    <a href="{% url 'community:discussion_list' %}" class="btn btn-outline">取消</a>
+                </div>
+            </form>
+        </div>
+
+        <!-- 讨论指南 -->
+        <div class="discussion-guidelines">
+            <h3>讨论指南</h3>
+            <ul>
+                <li>保持友善和专业的交流态度</li>
+                <li>分享有价值的观点和经验</li>
+                <li>避免发布广告或垃圾信息</li>
+                <li>尊重他人的观点，理性讨论</li>
+                <li>使用清晰的标题和内容结构</li>
+            </ul>
+        </div>
+    </div>
+</div>
+{% endblock %} 

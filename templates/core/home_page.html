@@ -2,147 +2,250 @@
 {% load static wagtailcore_tags wagtailimages_tags %}
 
 {% block content %}
-<!-- 英雄区域 -->
-<section class="hero-section">
-    <div class="hero-slider">
-        {% for article in featured %}
-        <div class="hero-slide">
-            {% if article.hero_image %}
-            <div class="hero-image">
-                {% image article.hero_image fill-1200x600 %}
-            </div>
-            {% endif %}
-            <div class="hero-content">
-                <div class="hero-meta">
-                    <span class="category">{{ article.channels.first.name|default:"新闻" }}</span>
-                    <span class="date">{{ article.date|date:"M d, Y" }}</span>
-                </div>
-                <h1 class="hero-title">{{ article.title }}</h1>
-                <p class="hero-excerpt">{{ article.specific.body|truncatewords:20 }}</p>
-                <a href="{{ article.url }}" class="hero-link">阅读更多</a>
+<!-- 频道导航 -->
+<section class="channel-navigation">
+    <div class="container">
+        <div class="channel-tabs" id="channelTabs">
+            <button class="channel-tab active" data-channel="all">全部</button>
+            {% for channel in channels %}
+            <button class="channel-tab channel-item" data-channel="{{ channel.slug }}" style="display: none;">{{ channel.name }}</button>
+            {% endfor %}
+            
+            <div class="channel-more" id="channelMore" style="display: none;">
+                <button class="channel-tab more-btn" id="moreChannelsBtn">
+                    更多 <i class="fas fa-chevron-down"></i>
+                </button>
             </div>
         </div>
-        {% endfor %}
     </div>
 </section>
+
+<!-- 频道下拉菜单 - 移到body层级 -->
+<div class="channel-dropdown" id="channelDropdown">
+    <!-- 动态生成的下拉菜单内容 -->
+</div>
 
 <!-- 主要内容区域 -->
 <div class="main-content">
     <div class="container">
         <div class="content-grid">
-            <!-- 左侧内容 -->
+            <!-- 左侧主要内容 -->
             <div class="content-main">
-                <!-- 新闻分类标签 -->
-                <div class="news-tabs">
-                    <button class="tab-btn active" data-category="all">全部</button>
-                    <button class="tab-btn" data-category="brand">品牌</button>
-                    <button class="tab-btn" data-category="agency">代理</button>
-                    <button class="tab-btn" data-category="creative">创意</button>
-                    <button class="tab-btn" data-category="digital">数字</button>
-                    <button class="tab-btn" data-category="media">媒体</button>
+                <h2 class="section-title">今日必读</h2>
+                
+                <!-- 主要文章网格 -->
+                <div class="main-articles-grid">
+                    {% if featured %}
+                        <div class="hero-slider">
+                            {% for article in featured %}
+                            <div class="hero-slide {% if forloop.first %}active{% endif %}">
+                                <div class="article-image">
+                                    {% if article.hero_image %}
+                                        {% image article.hero_image fill-800x500 %}
+                                    {% else %}
+                                        <div class="article-placeholder">
+                                            <i class="fas fa-newspaper"></i>
+                                        </div>
+                                    {% endif %}
+                                    <div class="slide-overlay">
+                                        <div class="slide-meta">
+                                            <span class="slide-category">{{ article.channels.first.name|default:"新闻" }}</span>
+                                            <span class="slide-time">{{ article.date|date:"M d, Y" }}</span>
+                                        </div>
+                                        <h3 class="slide-title">
+                                            <a href="{{ article.url }}">{{ article.title }}</a>
+                                        </h3>
+                                        <div class="slide-author">
+                                            <span class="author-name">编辑</span>
+                                            <span class="author-title">编辑</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                            
+                            <!-- 轮播指示器 -->
+                            <div class="slider-indicators">
+                                {% for article in featured %}
+                                <button class="indicator {% if forloop.first %}active{% endif %}" data-slide="{{ forloop.counter0 }}"></button>
+                                {% endfor %}
+                            </div>
+                            
+                            <!-- 轮播控制按钮 -->
+                            <button class="slider-btn prev-btn">
+                                <i class="fas fa-chevron-left"></i>
+                            </button>
+                            <button class="slider-btn next-btn">
+                                <i class="fas fa-chevron-right"></i>
+                            </button>
+                        </div>
+                    {% else %}
+                        <p>暂无精选文章</p>
+                    {% endif %}
+                </div>
+
+                <!-- 新闻网格 - 三列两行 -->
+                <div class="news-grid-section">
+                    <h3 class="subsection-title">热点新闻</h3>
+                    <div class="news-grid-3x2">
+                        {% if modules.0.items %}
+                            {% for article in modules.0.items|slice:":6" %}
+                            <article class="news-grid-item">
+                                <div class="news-grid-image">
+                                    {% if article.hero_image %}
+                                        {% image article.hero_image fill-200x150 %}
+                                    {% else %}
+                                        <div class="news-grid-placeholder">
+                                            <i class="fas fa-newspaper"></i>
+                                        </div>
+                                    {% endif %}
+                                </div>
+                                <div class="news-grid-content">
+                                    <h4 class="news-grid-title">
+                                        <a href="{{ article.url }}">{{ article.title }}</a>
+                                    </h4>
+                                    <div class="news-grid-meta">
+                                        <span class="news-grid-category">{{ article.channels.first.name|default:"新闻" }}</span>
+                                        <span class="news-grid-time">{{ article.date|date:"M d" }}</span>
+                                    </div>
+                                </div>
+                            </article>
+                            {% endfor %}
+                        {% else %}
+                            <p>暂无热点新闻</p>
+                        {% endif %}
+                    </div>
                 </div>
 
                 <!-- 最新新闻 -->
-                <section class="news-section">
-                    <h2 class="section-title">最新新闻</h2>
+                <div class="latest-news">
+                    <h3 class="subsection-title">最新新闻</h3>
                     <div class="news-grid">
-                        {% for article in modules.0.items %}
-                        <article class="news-item">
-                            {% if article.hero_image %}
-                            <div class="news-image">
-                                {% image article.hero_image fill-400x250 %}
-                            </div>
-                            {% endif %}
-                            <div class="news-content">
-                                <div class="news-meta">
-                                    <span class="category">{{ article.channels.first.name|default:"新闻" }}</span>
-                                    <span class="date">{{ article.date|date:"M d" }}</span>
+                        {% if modules.0.items %}
+                            {% for article in modules.0.items %}
+                            <article class="news-item">
+                                <div class="news-image">
+                                    {% if article.hero_image %}
+                                        {% image article.hero_image fill-300x200 %}
+                                    {% else %}
+                                        <div class="news-placeholder">
+                                            <i class="fas fa-newspaper"></i>
+                                        </div>
+                                    {% endif %}
                                 </div>
-                                <h3 class="news-title">
-                                    <a href="{{ article.url }}">{{ article.title }}</a>
-                                </h3>
-                                <p class="news-excerpt">{{ article.specific.body|truncatewords:15 }}</p>
-                            </div>
-                        </article>
-                        {% endfor %}
+                                <div class="news-content">
+                                    <div class="news-meta">
+                                        <span class="category">{{ article.channels.first.name|default:"新闻" }}</span>
+                                    </div>
+                                    <h4 class="news-title">
+                                        <a href="{{ article.url }}">{{ article.title }}</a>
+                                    </h4>
+                                </div>
+                            </article>
+                            {% endfor %}
+                        {% else %}
+                            <p>暂无最新新闻</p>
+                        {% endif %}
                     </div>
-                </section>
+                </div>
 
                 <!-- 创意作品展示 -->
-                <section class="creative-works">
-                    <h2 class="section-title">创意作品</h2>
+                <div class="creative-works">
+                    <h3 class="subsection-title">创意作品</h3>
                     <div class="works-grid">
-                        {% for work in creative_works %}
-                        <div class="work-item">
-                            {% if work.hero_image %}
-                            <div class="work-image">
-                                {% image work.hero_image fill-300x200 %}
+                        {% if creative_works %}
+                            {% for work in creative_works %}
+                            <div class="work-item">
+                                {% if work.hero_image %}
+                                <div class="work-image">
+                                    {% image work.hero_image fill-300x200 %}
+                                </div>
+                                {% else %}
+                                <div class="work-placeholder">
+                                    <i class="fas fa-palette"></i>
+                                </div>
+                                {% endif %}
+                                <div class="work-info">
+                                    <h4 class="work-title">
+                                        <a href="{{ work.url }}">{{ work.title }}</a>
+                                    </h4>
+                                    <p class="work-agency">{{ work.agency|default:"未知机构" }}</p>
+                                    <p class="work-client">{{ work.client|default:"未知客户" }}</p>
+                                </div>
                             </div>
-                            {% endif %}
-                            <div class="work-info">
-                                <h3 class="work-title">
-                                    <a href="{{ work.url }}">{{ work.title }}</a>
-                                </h3>
-                                <p class="work-agency">{{ work.agency }}</p>
-                                <p class="work-client">{{ work.client }}</p>
-                            </div>
-                        </div>
-                        {% endfor %}
+                            {% endfor %}
+                        {% else %}
+                            <p>暂无创意作品</p>
+                        {% endif %}
                     </div>
-                </section>
+                </div>
 
                 <!-- 行业活动 -->
-                <section class="events-section">
-                    <h2 class="section-title">即将举行的活动</h2>
+                <div class="events-section">
+                    <h3 class="subsection-title">即将举行的活动</h3>
                     <div class="events-list">
-                        {% for event in upcoming_events %}
-                        <div class="event-item">
-                            <div class="event-date">
-                                <span class="day">{{ event.event_date|date:"d" }}</span>
-                                <span class="month">{{ event.event_date|date:"M" }}</span>
+                        {% if upcoming_events %}
+                            {% for event in upcoming_events %}
+                            <div class="event-item">
+                                <div class="event-date">
+                                    <span class="day">{{ event.event_date|date:"d" }}</span>
+                                    <span class="month">{{ event.event_date|date:"M" }}</span>
+                                </div>
+                                <div class="event-info">
+                                    <h4 class="event-title">
+                                        <a href="{{ event.url }}">{{ event.title }}</a>
+                                    </h4>
+                                    <p class="event-location">{{ event.location|default:"地点待定" }}</p>
+                                    <p class="event-organizer">{{ event.organizer|default:"主办方待定" }}</p>
+                                </div>
                             </div>
-                            <div class="event-info">
-                                <h3 class="event-title">
-                                    <a href="{{ event.url }}">{{ event.title }}</a>
-                                </h3>
-                                <p class="event-location">{{ event.location }}</p>
-                                <p class="event-organizer">{{ event.organizer }}</p>
-                            </div>
-                        </div>
-                        {% endfor %}
+                            {% endfor %}
+                        {% else %}
+                            <p>暂无即将举行的活动</p>
+                        {% endif %}
                     </div>
-                </section>
+                </div>
             </div>
 
             <!-- 右侧边栏 -->
             <div class="content-sidebar">
-                <!-- 热门话题 -->
-                <div class="sidebar-widget">
-                    <h3 class="widget-title">热门话题</h3>
-                    <div class="trending-topics">
-                        <a href="#" class="topic-tag">#数字营销</a>
-                        <a href="#" class="topic-tag">#创意设计</a>
-                        <a href="#" class="topic-tag">#品牌策略</a>
-                        <a href="#" class="topic-tag">#社交媒体</a>
-                        <a href="#" class="topic-tag">#广告创意</a>
-                    </div>
+                <h3 class="sidebar-title">最受欢迎</h3>
+                
+                <!-- 热门文章列表 -->
+                <div class="popular-articles">
+                    {% if modules.0.items %}
+                        {% for article in modules.0.items|slice:":8" %}
+                        <div class="popular-item">
+                            <span class="popular-category">{{ article.channels.first.name|default:"新闻" }}</span>
+                            <h4 class="popular-title">
+                                <a href="{{ article.url }}">{{ article.title }}</a>
+                            </h4>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <p>暂无热门文章</p>
+                    {% endif %}
                 </div>
 
                 <!-- 最新讨论 -->
                 <div class="sidebar-widget">
                     <h3 class="widget-title">最新讨论</h3>
                     <div class="discussions-list">
-                        {% for discussion in latest_discussions %}
-                        <div class="discussion-item">
-                            <h4 class="discussion-title">
-                                <a href="#">{{ discussion.title }}</a>
-                            </h4>
-                            <div class="discussion-meta">
-                                <span class="author">{{ discussion.author.username }}</span>
-                                <span class="replies">{{ discussion.replies_count }} 回复</span>
+                        {% if latest_discussions %}
+                            {% for discussion in latest_discussions %}
+                            <div class="discussion-item">
+                                <h4 class="discussion-title">
+                                    <a href="#">{{ discussion.title }}</a>
+                                </h4>
+                                <div class="discussion-meta">
+                                    <span class="author">{{ discussion.author.username|default:"匿名用户" }}</span>
+                                    <span class="replies">{{ discussion.replies_count|default:0 }} 回复</span>
+                                </div>
                             </div>
-                        </div>
-                        {% endfor %}
+                            {% endfor %}
+                        {% else %}
+                            <p>暂无最新讨论</p>
+                        {% endif %}
                     </div>
                 </div>
 
@@ -150,17 +253,21 @@
                 <div class="sidebar-widget">
                     <h3 class="widget-title">最新报告</h3>
                     <div class="reports-list">
-                        {% for report in latest_reports %}
-                        <div class="report-item">
-                            <h4 class="report-title">
-                                <a href="{{ report.url }}">{{ report.title }}</a>
-                            </h4>
-                            <p class="report-author">{{ report.author }}</p>
-                            {% if report.is_free %}
-                            <span class="report-free">免费</span>
-                            {% endif %}
-                        </div>
-                        {% endfor %}
+                        {% if latest_reports %}
+                            {% for report in latest_reports %}
+                            <div class="report-item">
+                                <h4 class="report-title">
+                                    <a href="{{ report.url }}">{{ report.title }}</a>
+                                </h4>
+                                <p class="report-author">{{ report.author|default:"未知作者" }}</p>
+                                {% if report.is_free %}
+                                <span class="report-free">免费</span>
+                                {% endif %}
+                            </div>
+                            {% endfor %}
+                        {% else %}
+                            <p>暂无最新报告</p>
+                        {% endif %}
                     </div>
                 </div>
 
@@ -193,6 +300,10 @@
                         {% if item.hero_image %}
                         <div class="item-image">
                             {% image item.hero_image fill-200x150 %}
+                        </div>
+                        {% else %}
+                        <div class="item-placeholder">
+                            <i class="fas fa-newspaper"></i>
                         </div>
                         {% endif %}
                         <div class="item-content">

@@ -1,0 +1,133 @@
+{% extends "base.html" %}
+{% load static wagtailcore_tags wagtailimages_tags %}
+
+{% block content %}
+<article class="creative-work-page">
+    <div class="container">
+        <!-- 英雄区域 -->
+        <section class="work-hero">
+            {% if page.hero_image %}
+            <div class="hero-image">
+                {% image page.hero_image fill-1200x600 %}
+            </div>
+            {% endif %}
+            
+            <div class="hero-content">
+                <div class="work-meta">
+                    <span class="category">{{ page.category|title }}</span>
+                    <time datetime="{{ page.date|date:'c' }}">{{ page.date|date:'M d, Y' }}</time>
+                </div>
+                <h1 class="work-title">{{ page.title }}</h1>
+                
+                <div class="work-info">
+                    <div class="info-item">
+                        <span class="label">代理公司:</span>
+                        <span class="value">{{ page.agency }}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="label">客户:</span>
+                        <span class="value">{{ page.client }}</span>
+                    </div>
+                    {% if page.campaign_name %}
+                    <div class="info-item">
+                        <span class="label">活动名称:</span>
+                        <span class="value">{{ page.campaign_name }}</span>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </section>
+
+        <!-- 主要内容 -->
+        <div class="work-content">
+            <div class="content-grid">
+                <!-- 左侧内容 -->
+                <div class="main-content">
+                    {% if page.brief %}
+                    <section class="work-section">
+                        <h2>项目简介</h2>
+                        <div class="section-content">
+                            {{ page.brief|linebreaks }}
+                        </div>
+                    </section>
+                    {% endif %}
+
+                    {% if page.solution %}
+                    <section class="work-section">
+                        <h2>解决方案</h2>
+                        <div class="section-content">
+                            {{ page.solution|linebreaks }}
+                        </div>
+                    </section>
+                    {% endif %}
+
+                    {% if page.results %}
+                    <section class="work-section">
+                        <h2>项目成果</h2>
+                        <div class="section-content">
+                            {{ page.results|linebreaks }}
+                        </div>
+                    </section>
+                    {% endif %}
+
+                    {% if page.awards %}
+                    <section class="work-section">
+                        <h2>获奖情况</h2>
+                        <div class="section-content">
+                            {{ page.awards|linebreaks }}
+                        </div>
+                    </section>
+                    {% endif %}
+                </div>
+
+                <!-- 右侧边栏 -->
+                <div class="sidebar">
+                    <!-- 相关链接 -->
+                    <div class="sidebar-widget">
+                        <h3>相关链接</h3>
+                        <div class="links-list">
+                            {% if page.video_url %}
+                            <a href="{{ page.video_url }}" target="_blank" class="link-item">
+                                <span class="link-icon">🎥</span>
+                                <span class="link-text">观看视频</span>
+                            </a>
+                            {% endif %}
+                            
+                            {% if page.project_url %}
+                            <a href="{{ page.project_url }}" target="_blank" class="link-item">
+                                <span class="link-icon">🌐</span>
+                                <span class="link-text">项目网站</span>
+                            </a>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- 标签 -->
+                    {% if page.tags.all %}
+                    <div class="sidebar-widget">
+                        <h3>标签</h3>
+                        <div class="tags-list">
+                            {% for tag in page.tags.all %}
+                            <span class="tag">{{ tag.name }}</span>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <!-- 频道 -->
+                    {% if page.channels.all %}
+                    <div class="sidebar-widget">
+                        <h3>分类</h3>
+                        <div class="channels-list">
+                            {% for channel in page.channels.all %}
+                            <span class="channel">{{ channel.name }}</span>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</article>
+{% endblock %} 

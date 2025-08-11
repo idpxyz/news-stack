@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}搜索"{{ query }}" - 新闻平台{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="search-results">
+        <!-- 搜索头部 -->
+        <div class="search-header">
+            <div class="search-info">
+                <h1 class="search-title">
+                    {% if query %}
+                        搜索"{{ query }}"
+                    {% else %}
+                        搜索
+                    {% endif %}
+                </h1>
+                {% if query %}
+                    <p class="search-stats">找到 {{ result_count }} 个相关结果</p>
+                {% endif %}
+            </div>
+            
+            <!-- 搜索框 -->
+            <div class="search-box-inline">
+                <form method="get" action="{% url 'search' %}" class="search-form">
+                    <div class="search-input-wrapper">
+                        <i class="fas fa-search search-icon"></i>
+                        <input type="text" name="q" placeholder="搜索新闻、文章、话题..." 
+                               class="search-input" value="{{ query }}">
+                        <button type="submit" class="search-btn">
+                            <i class="fas fa-search"></i>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- 搜索结果 -->
+        {% if query %}
+            {% if results %}
+                <div class="results-list">
+                    {% for result in results %}
+                    <div class="result-item">
+                        <div class="result-meta">
+                            <span class="result-category">{{ result.category }}</span>
+                            <span class="result-date">{{ result.date|date:"M d, Y" }}</span>
+                        </div>
+                        <h3 class="result-title">
+                            <a href="{{ result.url }}">{{ result.title }}</a>
+                        </h3>
+                        <p class="result-excerpt">{{ result.excerpt }}</p>
+                        <div class="result-type">
+                            <span class="type-badge type-{{ result.type }}">
+                                {% if result.type == 'article' %}文章
+                                {% elif result.type == 'work' %}创意作品
+                                {% elif result.type == 'event' %}行业活动
+                                {% elif result.type == 'report' %}研究报告
+                                {% elif result.type == 'discussion' %}社区讨论
+                                {% endif %}
+                            </span>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="no-results">
+                    <div class="no-results-icon">
+                        <i class="fas fa-search"></i>
+                    </div>
+                    <h3>未找到相关结果</h3>
+                    <p>尝试使用不同的关键词，或者查看下面的热门搜索</p>
+                </div>
+            {% endif %}
+        {% endif %}
+
+        <!-- 热门搜索 -->
+        <div class="hot-searches-section">
+            <h3 class="section-title">热门搜索</h3>
+            <div class="hot-tags-grid">
+                {% for tag in hot_searches %}
+                <a href="{% url 'search' %}?q={{ tag }}" class="hot-tag-large">{{ tag }}</a>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

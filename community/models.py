@@ -28,7 +28,7 @@ class Discussion(models.Model):
         verbose_name="讨论分类"
     )
     
-    # 标签
+    # 标签 - 使用CharField简化
     tags = models.CharField(max_length=200, blank=True, verbose_name="标签")
     
     # 统计
@@ -63,14 +63,10 @@ class Discussion(models.Model):
         return self.title
 
 class Comment(models.Model):
-    """评论系统 - 通用评论"""
+    """评论系统"""
     content = models.TextField(verbose_name="评论内容")
     author = models.ForeignKey(User, on_delete=models.CASCADE, related_name='comments')
-    
-    # 通用外键，可以评论任何内容
-    content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
-    object_id = models.PositiveIntegerField()
-    content_object = GenericForeignKey('content_type', 'object_id')
+    discussion = models.ForeignKey(Discussion, on_delete=models.CASCADE, related_name='comments')
     
     # 回复功能
     parent = models.ForeignKey('self', null=True, blank=True, on_delete=models.CASCADE, related_name='replies')
@@ -95,21 +91,17 @@ class Comment(models.Model):
 class Like(models.Model):
     """点赞系统"""
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='likes')
-    
-    # 通用外键，可以点赞任何内容
-    content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
-    object_id = models.PositiveIntegerField()
-    content_object = GenericForeignKey('content_type', 'object_id')
+    discussion = models.ForeignKey(Discussion, on_delete=models.CASCADE, related_name='likes')
     
     created_at = models.DateTimeField(auto_now_add=True)
     
     class Meta:
-        unique_together = ('user', 'content_type', 'object_id')
+        unique_together = ('user', 'discussion')
         verbose_name = "点赞"
         verbose_name_plural = "点赞"
     
     def __str__(self):
-        return f"{self.user.username} 点赞了 {self.content_object}"
+        return f"{self.user.username} 点赞了 {self.discussion.title}"
 
 class Notification(models.Model):
     """通知系统"""
@@ -141,7 +133,7 @@ class Notification(models.Model):
         ordering = ['-created_at']
     
     def __str__(self):
-        return f"{self.recipient.username} - {self.message}"
+        return f"{self.recipient.username} - {self.get_notification_type_display()}"
 
 class Tag(models.Model):
     """标签系统"""

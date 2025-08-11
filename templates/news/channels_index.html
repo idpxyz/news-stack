@@ -1,2 +1,42 @@
 {% extends "base.html" %}
-{% block content %}<h1>频道</h1><ul class="channels">{% for ch in channels %}<li><a href="{{ page.url }}{{ ch.slug }}/">{{ ch.name }}</a></li>{% endfor %}</ul>{% endblock %}
+{% load static %}
+
+{% block title %}频道 - 新闻平台{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="channels-header">
+        <h1 class="page-title">新闻频道</h1>
+        <p class="page-subtitle">浏览所有新闻频道，发现您感兴趣的内容</p>
+    </div>
+
+    <div class="channels-grid">
+        {% for channel in channels %}
+        <div class="channel-card">
+            <div class="channel-icon">
+                {% if channel.icon %}
+                    <i class="{{ channel.icon }}"></i>
+                {% else %}
+                    <i class="fas fa-newspaper"></i>
+                {% endif %}
+            </div>
+            <div class="channel-content">
+                <h3 class="channel-name">
+                    <a href="{{ page.url }}{{ channel.slug }}/">{{ channel.name }}</a>
+                </h3>
+                {% if channel.description %}
+                <p class="channel-description">{{ channel.description }}</p>
+                {% endif %}
+                <div class="channel-meta">
+                    <span class="channel-type">{{ channel.get_category_type_display }}</span>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="empty-state">
+            <p>暂无频道内容</p>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

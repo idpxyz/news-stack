@@ -303,7 +303,8 @@ class HomePage(Page):
     subpage_types=["news.SectionIndexPage"]
 
     def get_context(self,request):
-        from news.models import ArticlePage, CreativeWorkPage, IndustryEventPage, ResearchReportPage
+        from news.models import ArticlePage, CreativeWorkPage, IndustryEventPage, ResearchReportPage, Channel
+        from community.models import Discussion
         from django.utils import timezone
         from datetime import timedelta
         ctx=super().get_context(request)
@@ -317,11 +318,16 @@ class HomePage(Page):
             ctx["upcoming_events"] = []
             ctx["latest_reports"] = []
             ctx["latest_discussions"] = []
+            ctx["channels"] = []
             return ctx
             
         site_root=site.root_page
         selected_ids=set()
         settings=HomeToggles.for_site(site)
+        
+        # 获取所有活跃频道
+        channels = Channel.objects.filter(is_active=True).order_by('name')
+        ctx["channels"] = channels
         
         # 获取特色文章
         manual=[fi.article.specific for fi in self.featured_items.select_related("article")]
@@ -350,8 +356,12 @@ class HomePage(Page):
         latest_reports = ResearchReportPage.objects.live().public().specific().descendant_of(site_root).order_by("-publish_date")[:5]
         ctx["latest_reports"] = latest_reports
         
-        # 暂时使用空列表，避免数据库表不存在的问题
-        ctx["latest_discussions"] = []
+        # 获取最新讨论
+        try:
+            latest_discussions = Discussion.objects.select_related('author').order_by('-created_at')[:5]
+            ctx["latest_discussions"] = latest_discussions
+        except:
+            ctx["latest_discussions"] = []
         
         # 获取频道模块内容
         modules_out=[]

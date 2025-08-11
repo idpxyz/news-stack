@@ -1,0 +1,112 @@
+{% extends "base.html" %}
+{% load static wagtailcore_tags wagtailimages_tags %}
+
+{% block content %}
+<article class="event-page">
+    <div class="container">
+        <!-- 英雄区域 -->
+        <section class="event-hero">
+            {% if page.hero_image %}
+            <div class="hero-image">
+                {% image page.hero_image fill-1200x600 %}
+            </div>
+            {% endif %}
+            
+            <div class="hero-content">
+                <div class="event-meta">
+                    <span class="event-type">{{ page.event_type|title }}</span>
+                    <time datetime="{{ page.event_date|date:'c' }}">{{ page.event_date|date:'M d, Y' }}</time>
+                </div>
+                <h1 class="event-title">{{ page.title }}</h1>
+                
+                <div class="event-info">
+                    <div class="info-item">
+                        <span class="label">地点:</span>
+                        <span class="value">{{ page.location }}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="label">主办方:</span>
+                        <span class="value">{{ page.organizer }}</span>
+                    </div>
+                    {% if page.ticket_price %}
+                    <div class="info-item">
+                        <span class="label">票价:</span>
+                        <span class="value">{{ page.ticket_price }}</span>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </section>
+
+        <!-- 主要内容 -->
+        <div class="event-content">
+            <div class="content-grid">
+                <!-- 左侧内容 -->
+                <div class="main-content">
+                    <section class="event-section">
+                        <h2>活动描述</h2>
+                        <div class="section-content">
+                            {{ page.description|linebreaks }}
+                        </div>
+                    </section>
+
+                    {% if page.agenda %}
+                    <section class="event-section">
+                        <h2>活动议程</h2>
+                        <div class="section-content">
+                            {{ page.agenda|linebreaks }}
+                        </div>
+                    </section>
+                    {% endif %}
+
+                    {% if page.speakers %}
+                    <section class="event-section">
+                        <h2>演讲嘉宾</h2>
+                        <div class="section-content">
+                            {{ page.speakers|linebreaks }}
+                        </div>
+                    </section>
+                    {% endif %}
+                </div>
+
+                <!-- 右侧边栏 -->
+                <div class="sidebar">
+                    <!-- 报名信息 -->
+                    {% if page.registration_url %}
+                    <div class="sidebar-widget">
+                        <h3>报名信息</h3>
+                        <a href="{{ page.registration_url }}" target="_blank" class="register-btn">
+                            立即报名
+                        </a>
+                    </div>
+                    {% endif %}
+
+                    <!-- 标签 -->
+                    {% if page.tags.all %}
+                    <div class="sidebar-widget">
+                        <h3>标签</h3>
+                        <div class="tags-list">
+                            {% for tag in page.tags.all %}
+                            <span class="tag">{{ tag.name }}</span>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <!-- 频道 -->
+                    {% if page.channels.all %}
+                    <div class="sidebar-widget">
+                        <h3>分类</h3>
+                        <div class="channels-list">
+                            {% for channel in page.channels.all %}
+                            <span class="channel">{{ channel.name }}</span>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</article>
+{% endblock %} 

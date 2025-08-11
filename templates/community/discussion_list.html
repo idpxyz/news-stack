@@ -1,0 +1,115 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}社区讨论 - 新闻平台{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="community-header">
+        <h1 class="page-title">社区讨论</h1>
+        <p class="page-subtitle">与行业同仁交流想法，分享见解</p>
+        {% if user.is_authenticated %}
+        <a href="{% url 'community:create_discussion' %}" class="btn btn-primary">发起讨论</a>
+        {% endif %}
+    </div>
+
+    <div class="community-content">
+        <div class="content-main">
+            <!-- 搜索和筛选 -->
+            <div class="search-filter">
+                <form method="get" class="search-form">
+                    <input type="text" name="q" value="{{ query }}" placeholder="搜索讨论..." class="search-input">
+                    <button type="submit" class="search-btn">搜索</button>
+                </form>
+            </div>
+
+            <!-- 讨论列表 -->
+            <div class="discussions-list">
+                {% for discussion in discussions %}
+                <div class="discussion-item">
+                    <div class="discussion-header">
+                        <h3 class="discussion-title">
+                            <a href="{% url 'community:discussion_detail' discussion.id %}">{{ discussion.title }}</a>
+                        </h3>
+                        <div class="discussion-meta">
+                            <span class="author">
+                                <a href="{% url 'community:user_profile' discussion.author.username %}">
+                                    {{ discussion.author.username }}
+                                </a>
+                            </span>
+                            <span class="date">{{ discussion.created_at|date:"M d, Y" }}</span>
+                        </div>
+                    </div>
+                    
+                    <div class="discussion-content">
+                        <p>{{ discussion.content|truncatewords:30 }}</p>
+                    </div>
+                    
+                    <div class="discussion-footer">
+                        <div class="discussion-tags">
+                            {% if discussion.tags %}
+                                {% for tag in discussion.tags.split|slice:":3" %}
+                                <a href="?tag={{ tag }}" class="tag">{{ tag }}</a>
+                                {% endfor %}
+                            {% endif %}
+                        </div>
+                        <div class="discussion-stats">
+                            <span class="comments">{{ discussion.comment_count }} 回复</span>
+                            <span class="likes">{{ discussion.like_count }} 点赞</span>
+                        </div>
+                    </div>
+                </div>
+                {% empty %}
+                <div class="empty-state">
+                    <p>暂无讨论内容</p>
+                    {% if user.is_authenticated %}
+                    <a href="{% url 'community:create_discussion' %}" class="btn btn-primary">发起第一个讨论</a>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+
+            <!-- 分页 -->
+            {% if page_obj.has_other_pages %}
+            <div class="pagination">
+                {% if page_obj.has_previous %}
+                <a href="?page={{ page_obj.previous_page_number }}{% if query %}&q={{ query }}{% endif %}{% if selected_tag %}&tag={{ selected_tag }}{% endif %}" class="page-link">上一页</a>
+                {% endif %}
+                
+                <span class="current-page">{{ page_obj.number }} / {{ page_obj.paginator.num_pages }}</span>
+                
+                {% if page_obj.has_next %}
+                <a href="?page={{ page_obj.next_page_number }}{% if query %}&q={{ query }}{% endif %}{% if selected_tag %}&tag={{ selected_tag }}{% endif %}" class="page-link">下一页</a>
+                {% endif %}
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- 侧边栏 -->
+        <div class="content-sidebar">
+            <!-- 热门标签 -->
+            <div class="sidebar-widget">
+                <h3 class="widget-title">热门标签</h3>
+                <div class="tags-cloud">
+                    {% for tag in popular_tags %}
+                    <a href="?tag={{ tag.name }}" class="tag {% if selected_tag == tag.name %}active{% endif %}">
+                        {{ tag.name }}
+                    </a>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- 快速操作 -->
+            {% if user.is_authenticated %}
+            <div class="sidebar-widget">
+                <h3 class="widget-title">快速操作</h3>
+                <div class="quick-actions">
+                    <a href="{% url 'community:create_discussion' %}" class="btn btn-primary btn-block">发起讨论</a>
+                    <a href="{% url 'community:user_profile' user.username %}" class="btn btn-outline btn-block">我的资料</a>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %} 

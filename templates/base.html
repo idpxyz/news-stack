@@ -7,7 +7,9 @@
     
     <title>{% block title %}{{ page.title }}{% endblock %} - 新闻平台</title>
     
-    <link rel="stylesheet" href="{% static 'site.css' %}">
+    <link rel="stylesheet" href="{% static 'site.css' %}?v=20250101">
+    <link rel="stylesheet" href="{% static 'community.css' %}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     
     <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
@@ -18,13 +20,26 @@
     
     <header class="site-header">
         <div class="container">
-            <a class="brand" href="/">
-                党报头条
-            </a>
+            <!-- 头部搜索区域 -->
+            <div class="header-search">
+                <div class="header-search-title">党报头条</div>
+                <div class="header-search-box">
+                    <form method="get" action="{% url 'search' %}" class="search-form">
+                        <div class="header-search-input-wrapper">
+                            <input type="text" name="q" placeholder="搜索..." 
+                                   class="header-search-input" value="{{ request.GET.q|default:'' }}">
+                            <button type="submit" class="header-search-btn">
+                                <i class="fas fa-search"></i>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
             
             <nav>
                 <a href="/">首页</a>
                 <a href="/channels/">频道</a>
+                <a href="{% url 'community:discussion_list' %}">社区</a>
                 <a href="/admin/">Admin</a>
             </nav>
             
@@ -38,6 +53,45 @@
             </div>
         </div>
     </header>
+    
+    <!-- 搜索区域 -->
+    <section class="search-section">
+        <div class="container">
+            <div class="search-container">
+                <!-- 党报头条标题 -->
+                <h1 class="search-title">党报头条</h1>
+                
+                <!-- 添加slogan -->
+                <!-- <p class="search-slogan">汇聚党报力量，倾听人们声音</p> -->
+                
+                <!-- 搜索框 - 居中显示 -->
+                <div class="search-box">
+                    <form method="get" action="{% url 'search' %}" class="search-form">
+                        <div class="search-input-wrapper">
+                            <input type="text" name="q" placeholder="搜索新闻、文章、话题..." 
+                                   class="search-input" value="{{ request.GET.q|default:'' }}">
+                            <button type="submit" class="search-btn">
+                                <i class="fas fa-search"></i>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+                
+                <!-- 热门搜索 - 放在搜索框下面 -->
+                <div class="hot-searches">
+                    <span class="hot-label">热门搜索：</span>
+                    <div class="hot-tags">
+                        <a href="{% url 'search' %}?q=数字营销" class="hot-tag">数字营销</a>
+                        <a href="{% url 'search' %}?q=创意设计" class="hot-tag">创意设计</a>
+                        <a href="{% url 'search' %}?q=品牌策略" class="hot-tag">品牌策略</a>
+                        <a href="{% url 'search' %}?q=社交媒体" class="hot-tag">社交媒体</a>
+                        <a href="{% url 'search' %}?q=广告创意" class="hot-tag">广告创意</a>
+                        <a href="{% url 'search' %}?q=内容营销" class="hot-tag">内容营销</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
     
     <main>
         {% block content %}{% endblock %}
@@ -62,5 +116,278 @@
             </div>
         </div>
     </footer>
+    
+    {% block extra_js %}{% endblock %}
+    
+    <script>
+        // 控制头部搜索框的显示/隐藏
+        document.addEventListener('DOMContentLoaded', function() {
+            const searchSection = document.querySelector('.search-section');
+            const headerSearch = document.querySelector('.header-search');
+            const siteHeader = document.querySelector('.site-header');
+            
+            if (searchSection && headerSearch) {
+                const searchSectionRect = searchSection.getBoundingClientRect();
+                const searchSectionBottom = searchSectionRect.bottom;
+                
+                function checkSearchSectionVisibility() {
+                    const rect = searchSection.getBoundingClientRect();
+                    
+                    // 如果搜索区域完全不可见（在视窗上方），显示头部搜索框
+                    if (rect.bottom <= 0) {
+                        headerSearch.classList.add('show');
+                        siteHeader.classList.add('has-search');
+                    } else {
+                        headerSearch.classList.remove('show');
+                        siteHeader.classList.remove('has-search');
+                    }
+                }
+                
+                // 监听滚动事件
+                window.addEventListener('scroll', checkSearchSectionVisibility);
+                
+                // 初始检查
+                checkSearchSectionVisibility();
+            }
+        });
+
+        // 轮播图功能
+        document.addEventListener('DOMContentLoaded', function() {
+            const slider = document.querySelector('.hero-slider');
+            if (!slider) return;
+
+            const slides = slider.querySelectorAll('.hero-slide');
+            const indicators = slider.querySelectorAll('.indicator');
+            const prevBtn = slider.querySelector('.prev-btn');
+            const nextBtn = slider.querySelector('.next-btn');
+            
+            let currentSlide = 0;
+            let slideInterval;
+            const slideDelay = 5000; // 5秒自动切换
+
+            // 显示指定幻灯片
+            function showSlide(index) {
+                // 隐藏所有幻灯片
+                slides.forEach(slide => slide.classList.remove('active'));
+                indicators.forEach(indicator => indicator.classList.remove('active'));
+                
+                // 显示当前幻灯片
+                slides[index].classList.add('active');
+                indicators[index].classList.add('active');
+                
+                currentSlide = index;
+            }
+
+            // 下一张幻灯片
+            function nextSlide() {
+                const next = (currentSlide + 1) % slides.length;
+                showSlide(next);
+            }
+
+            // 上一张幻灯片
+            function prevSlide() {
+                const prev = (currentSlide - 1 + slides.length) % slides.length;
+                showSlide(prev);
+            }
+
+            // 开始自动轮播
+            function startAutoSlide() {
+                slideInterval = setInterval(nextSlide, slideDelay);
+            }
+
+            // 停止自动轮播
+            function stopAutoSlide() {
+                clearInterval(slideInterval);
+            }
+
+            // 绑定指示器点击事件
+            indicators.forEach((indicator, index) => {
+                indicator.addEventListener('click', () => {
+                    showSlide(index);
+                    stopAutoSlide();
+                    startAutoSlide(); // 重新开始自动轮播
+                });
+            });
+
+            // 绑定控制按钮事件
+            if (prevBtn) {
+                prevBtn.addEventListener('click', () => {
+                    prevSlide();
+                    stopAutoSlide();
+                    startAutoSlide();
+                });
+            }
+
+            if (nextBtn) {
+                nextBtn.addEventListener('click', () => {
+                    nextSlide();
+                    stopAutoSlide();
+                    startAutoSlide();
+                });
+            }
+
+            // 鼠标悬停时暂停自动轮播
+            slider.addEventListener('mouseenter', stopAutoSlide);
+            slider.addEventListener('mouseleave', startAutoSlide);
+
+            // 开始自动轮播
+            if (slides.length > 1) {
+                startAutoSlide();
+            }
+        });
+
+        // 频道切换功能
+        document.addEventListener('DOMContentLoaded', function() {
+            const channelTabs = document.querySelectorAll('.channel-tab');
+            const moreBtn = document.getElementById('moreChannelsBtn');
+            const channelDropdown = document.getElementById('channelDropdown');
+            const channelMore = document.getElementById('channelMore');
+            const channelItems = document.querySelectorAll('.channel-item');
+            
+            // 动态计算并显示频道
+            function calculateAndShowChannels() {
+                const container = document.querySelector('.channel-navigation .container');
+                const tabsContainer = document.getElementById('channelTabs');
+                const allBtn = document.querySelector('.channel-tab[data-channel="all"]');
+                
+                // 重置显示状态
+                channelItems.forEach(item => item.style.display = 'none');
+                channelMore.style.display = 'none';
+                
+                // 获取容器宽度
+                const containerWidth = container.offsetWidth;
+                const allBtnWidth = allBtn.offsetWidth;
+                const moreBtnWidth = 120; // 更多按钮的预估宽度
+                const gap = 8; // 间距
+                
+                // 计算可用宽度 - 为更多按钮预留空间
+                let availableWidth = containerWidth - allBtnWidth - moreBtnWidth - gap * 2;
+                let visibleCount = 0;
+                
+                // 逐个添加频道，直到空间不足
+                for (let i = 0; i < channelItems.length; i++) {
+                    const item = channelItems[i];
+                    item.style.display = 'inline-flex';
+                    
+                    // 临时添加到DOM以测量宽度
+                    const itemWidth = item.offsetWidth;
+                    
+                    // 检查是否有足够空间
+                    if (availableWidth >= itemWidth + gap + 100) {
+                        availableWidth -= (itemWidth + gap);
+                        visibleCount++;
+                    } else {
+                        item.style.display = 'none';
+                        break;
+                    }
+                }
+                
+                // 如果还有剩余频道，显示更多按钮
+                if (visibleCount < channelItems.length) {
+                    channelMore.style.display = 'inline-flex';
+                    
+                    // 生成下拉菜单内容
+                    const channelItemsArray = Array.from(channelItems);
+                    const dropdownContent = channelItemsArray.slice(visibleCount).map(item => {
+                        const channelSlug = item.getAttribute('data-channel');
+                        const channelText = item.textContent;
+                        return `<button class="channel-tab dropdown-item" data-channel="${channelSlug}">${channelText}</button>`;
+                    }).join('');
+                    
+                    channelDropdown.innerHTML = dropdownContent;
+                    
+                    // 重新绑定事件
+                    bindChannelEvents();
+                }
+            }
+            
+            // 初始计算
+            calculateAndShowChannels();
+            
+            // 初始绑定事件
+            bindChannelEvents();
+            
+            // 窗口大小改变时重新计算
+            window.addEventListener('resize', function() {
+                calculateAndShowChannels();
+                bindChannelEvents();
+            });
+            
+            // 频道切换功能
+            function bindChannelEvents() {
+                const allChannelTabs = document.querySelectorAll('.channel-tab');
+                
+                allChannelTabs.forEach(tab => {
+                    tab.addEventListener('click', function() {
+                        const channel = this.getAttribute('data-channel');
+                        
+                        // 移除所有活动状态
+                        allChannelTabs.forEach(t => t.classList.remove('active'));
+                        
+                        // 添加当前活动状态
+                        this.classList.add('active');
+                        
+                        // 如果点击的是下拉菜单中的项目，关闭下拉菜单
+                        if (this.classList.contains('dropdown-item')) {
+                            closeDropdown();
+                        }
+                        
+                        // 这里可以添加AJAX请求来加载对应频道的内容
+                        console.log('切换到频道:', channel);
+                    });
+                });
+            }
+            
+            // 更多按钮点击事件
+            if (moreBtn) {
+                moreBtn.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    toggleDropdown();
+                });
+            }
+            
+            // 点击其他地方关闭下拉菜单
+            document.addEventListener('click', function(e) {
+                if (!e.target.closest('.channel-more')) {
+                    closeDropdown();
+                }
+            });
+            
+            // 切换下拉菜单
+            function toggleDropdown() {
+                if (channelDropdown) {
+                    const isVisible = channelDropdown.classList.contains('show');
+                    if (isVisible) {
+                        closeDropdown();
+                    } else {
+                        openDropdown();
+                    }
+                }
+            }
+            
+            // 打开下拉菜单
+            function openDropdown() {
+                if (channelDropdown && moreBtn) {
+                    // 计算更多按钮的位置
+                    const moreBtnRect = moreBtn.getBoundingClientRect();
+                    
+                    // 设置下拉菜单的位置
+                    channelDropdown.style.top = (moreBtnRect.bottom + 5) + 'px';
+                    channelDropdown.style.left = (moreBtnRect.right - 200) + 'px';
+                    
+                    channelDropdown.classList.add('show');
+                    moreBtn.classList.add('active');
+                }
+            }
+            
+            // 关闭下拉菜单
+            function closeDropdown() {
+                if (channelDropdown && moreBtn) {
+                    channelDropdown.classList.remove('show');
+                    moreBtn.classList.remove('active');
+                }
+            }
+        });
+    </script>
 </body>
 </html>

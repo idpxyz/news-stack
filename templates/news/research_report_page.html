@@ -1,0 +1,114 @@
+{% extends "base.html" %}
+{% load static wagtailcore_tags wagtailimages_tags %}
+
+{% block content %}
+<article class="report-page">
+    <div class="container">
+        <!-- 英雄区域 -->
+        <section class="report-hero">
+            {% if page.hero_image %}
+            <div class="hero-image">
+                {% image page.hero_image fill-1200x600 %}
+            </div>
+            {% endif %}
+            
+            <div class="hero-content">
+                <div class="report-meta">
+                    <span class="report-type">{{ page.report_type|title }}</span>
+                    <time datetime="{{ page.publish_date|date:'c' }}">{{ page.publish_date|date:'M d, Y' }}</time>
+                </div>
+                <h1 class="report-title">{{ page.title }}</h1>
+                
+                <div class="report-info">
+                    <div class="info-item">
+                        <span class="label">作者/机构:</span>
+                        <span class="value">{{ page.author }}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="label">报告类型:</span>
+                        <span class="value">{{ page.get_report_type_display }}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="label">下载:</span>
+                        <span class="value">{% if page.is_free %}免费{% else %}付费{% endif %}</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 主要内容 -->
+        <div class="report-content">
+            <div class="content-grid">
+                <!-- 左侧内容 -->
+                <div class="main-content">
+                    <section class="report-section">
+                        <h2>报告摘要</h2>
+                        <div class="section-content">
+                            {{ page.summary|linebreaks }}
+                        </div>
+                    </section>
+
+                    {% if page.key_findings %}
+                    <section class="report-section">
+                        <h2>关键发现</h2>
+                        <div class="section-content">
+                            {{ page.key_findings|linebreaks }}
+                        </div>
+                    </section>
+                    {% endif %}
+
+                    {% if page.methodology %}
+                    <section class="report-section">
+                        <h2>研究方法</h2>
+                        <div class="section-content">
+                            {{ page.methodology|linebreaks }}
+                        </div>
+                    </section>
+                    {% endif %}
+                </div>
+
+                <!-- 右侧边栏 -->
+                <div class="sidebar">
+                    <!-- 下载信息 -->
+                    {% if page.download_url %}
+                    <div class="sidebar-widget">
+                        <h3>下载报告</h3>
+                        <a href="{{ page.download_url }}" target="_blank" class="download-btn">
+                            {% if page.is_free %}
+                            📥 免费下载
+                            {% else %}
+                            💰 付费下载
+                            {% endif %}
+                        </a>
+                    </div>
+                    {% endif %}
+
+                    <!-- 标签 -->
+                    {% if page.tags.all %}
+                    <div class="sidebar-widget">
+                        <h3>标签</h3>
+                        <div class="tags-list">
+                            {% for tag in page.tags.all %}
+                            <span class="tag">{{ tag.name }}</span>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <!-- 频道 -->
+                    {% if page.channels.all %}
+                    <div class="sidebar-widget">
+                        <h3>分类</h3>
+                        <div class="channels-list">
+                            {% for channel in page.channels.all %}
+                            <span class="channel">{{ channel.name }}</span>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</article>
+{% endblock %} 

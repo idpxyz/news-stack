@@ -1,0 +1,140 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}{{ profile_user.username }} 的个人资料 - 新闻平台{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="user-profile">
+        <!-- 用户基本信息 -->
+        <div class="profile-header">
+            <div class="profile-avatar">
+                {% if profile_user.userprofile.avatar %}
+                    <img src="{{ profile_user.userprofile.avatar.url }}" alt="{{ profile_user.username }}" class="avatar-img">
+                {% else %}
+                    <div class="avatar-placeholder">
+                        <i class="fas fa-user"></i>
+                    </div>
+                {% endif %}
+            </div>
+            <div class="profile-info">
+                <h1 class="profile-name">{{ profile_user.username }}</h1>
+                <p class="profile-join-date">加入时间：{{ profile_user.date_joined|date:"Y年m月d日" }}</p>
+                {% if profile_user.userprofile.bio %}
+                    <p class="profile-bio">{{ profile_user.userprofile.bio }}</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- 用户统计 -->
+        <div class="profile-stats">
+            <div class="stat-item">
+                <span class="stat-number">{{ discussions.count }}</span>
+                <span class="stat-label">讨论</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-number">{{ comments.count }}</span>
+                <span class="stat-label">评论</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-number">{{ profile_user.userprofile.followers.count }}</span>
+                <span class="stat-label">关注者</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-number">{{ profile_user.userprofile.following.count }}</span>
+                <span class="stat-label">关注中</span>
+            </div>
+        </div>
+
+        <!-- 内容标签页 -->
+        <div class="profile-content">
+            <div class="content-tabs">
+                <button class="tab-btn active" data-tab="discussions">讨论 ({{ discussions.count }})</button>
+                <button class="tab-btn" data-tab="comments">评论 ({{ comments.count }})</button>
+            </div>
+
+            <!-- 讨论列表 -->
+            <div class="tab-content active" id="discussions-tab">
+                <div class="discussions-list">
+                    {% for discussion in discussions %}
+                    <div class="discussion-item">
+                        <div class="discussion-header">
+                            <h3 class="discussion-title">
+                                <a href="{% url 'community:discussion_detail' discussion.id %}">{{ discussion.title }}</a>
+                            </h3>
+                            <div class="discussion-meta">
+                                <span class="date">{{ discussion.created_at|date:"M d, Y" }}</span>
+                                <span class="comments">{{ discussion.comments.count }} 回复</span>
+                                <span class="likes">{{ discussion.likes.count }} 点赞</span>
+                            </div>
+                        </div>
+                        
+                        <div class="discussion-content">
+                            <p>{{ discussion.content|truncatewords:30 }}</p>
+                        </div>
+                        
+                        <div class="discussion-tags">
+                            {% if discussion.tags %}
+                                {% for tag in discussion.tags.split|slice:":3" %}
+                                <a href="{% url 'community:discussion_list' %}?tag={{ tag }}" class="tag">{{ tag }}</a>
+                                {% endfor %}
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% empty %}
+                    <div class="empty-state">
+                        <p>暂无讨论内容</p>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- 评论列表 -->
+            <div class="tab-content" id="comments-tab">
+                <div class="comments-list">
+                    {% for comment in comments %}
+                    <div class="comment-item">
+                        <div class="comment-content">
+                            <p>{{ comment.content }}</p>
+                        </div>
+                        <div class="comment-meta">
+                            <span class="date">{{ comment.created_at|date:"M d, Y H:i" }}</span>
+                            <span class="discussion">
+                                回复于：<a href="{% url 'community:discussion_detail' comment.discussion.id %}">{{ comment.discussion.title }}</a>
+                            </span>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <div class="empty-state">
+                        <p>暂无评论内容</p>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const tabBtns = document.querySelectorAll('.tab-btn');
+    const tabContents = document.querySelectorAll('.tab-content');
+    
+    tabBtns.forEach(btn => {
+        btn.addEventListener('click', function() {
+            const targetTab = this.getAttribute('data-tab');
+            
+            // 移除所有活动状态
+            tabBtns.forEach(b => b.classList.remove('active'));
+            tabContents.forEach(c => c.classList.remove('active'));
+            
+            // 添加活动状态
+            this.classList.add('active');
+            document.getElementById(targetTab + '-tab').classList.add('active');
+        });
+    });
+});
+</script>
+{% endblock %} 

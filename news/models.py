@@ -63,6 +63,27 @@ class ArticleTag(TaggedItemBase):
         on_delete=models.CASCADE
     )
 
+class CreativeWorkTag(TaggedItemBase):
+    content_object = ParentalKey(
+        'CreativeWorkPage',
+        related_name='tagged_items',
+        on_delete=models.CASCADE
+    )
+
+class EventTag(TaggedItemBase):
+    content_object = ParentalKey(
+        'IndustryEventPage',
+        related_name='tagged_items',
+        on_delete=models.CASCADE
+    )
+
+class ReportTag(TaggedItemBase):
+    content_object = ParentalKey(
+        'ResearchReportPage',
+        related_name='tagged_items',
+        on_delete=models.CASCADE
+    )
+
 class ArticlePage(Page):
     date=models.DateTimeField(db_index=True)
     hero_image=models.ForeignKey("wagtailimages.Image",null=True,blank=True,on_delete=models.SET_NULL,related_name="+")
@@ -117,7 +138,7 @@ class CreativeWorkPage(Page):
     
     # 标签和分类
     channels = ParentalManyToManyField("news.Channel", blank=True, related_name="creative_works")
-    tags = ClusterTaggableManager(through="news.ArticleTag", blank=True)
+    tags = ClusterTaggableManager(through="news.CreativeWorkTag", blank=True)
     is_featured = models.BooleanField(default=False, db_index=True, verbose_name="精选作品")
     feature_rank = models.IntegerField(default=0, db_index=True, verbose_name="精选排序")
     
@@ -186,7 +207,7 @@ class IndustryEventPage(Page):
     # 媒体
     hero_image = models.ForeignKey("wagtailimages.Image", null=True, blank=True, on_delete=models.SET_NULL, related_name="+")
     channels = ParentalManyToManyField("news.Channel", blank=True, related_name="events")
-    tags = ClusterTaggableManager(through="news.ArticleTag", blank=True)
+    tags = ClusterTaggableManager(through="news.EventTag", blank=True)
     
     parent_page_types = ["news.SectionIndexPage"]
     subpage_types = []
@@ -246,7 +267,7 @@ class ResearchReportPage(Page):
     
     # 标签和分类
     channels = ParentalManyToManyField("news.Channel", blank=True, related_name="reports")
-    tags = ClusterTaggableManager(through="news.ArticleTag", blank=True)
+    tags = ClusterTaggableManager(through="news.ReportTag", blank=True)
     is_featured = models.BooleanField(default=False, db_index=True, verbose_name="精选报告")
     
     parent_page_types = ["news.SectionIndexPage"]
@@ -272,7 +293,7 @@ class ResearchReportPage(Page):
     ]
 
 class ChannelsIndexPage(RoutablePageMixin, Page):
-    parent_page_types=["core.HomePage"]
+    parent_page_types=["core.HomePage", "wagtailcore.Page"]
     subpage_types=[]
     @route(r'^$')
     def index(self, request):
@@ -291,6 +312,3 @@ class ChannelsIndexPage(RoutablePageMixin, Page):
         page_num=int(request.GET.get("page",1))
         page_obj=paginator.get_page(page_num)
         return render(request,"news/channel_landing.html",{"page":self,"channel":ch,"page_obj":page_obj,"items":page_obj.object_list})
-
-
-

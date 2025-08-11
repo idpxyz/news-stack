@@ -1,0 +1,163 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}{{ discussion.title }} - 社区讨论{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="discussion-detail">
+        <!-- 讨论内容 -->
+        <div class="discussion-main">
+            <div class="discussion-header">
+                <h1 class="discussion-title">{{ discussion.title }}</h1>
+                <div class="discussion-meta">
+                    <span class="author">
+                        <a href="{% url 'community:user_profile' discussion.author.username %}">
+                            {{ discussion.author.username }}
+                        </a>
+                    </span>
+                    <span class="date">{{ discussion.created_at|date:"M d, Y H:i" }}</span>
+                    <div class="discussion-tags">
+                        {% if discussion.tags %}
+                            {% for tag in discussion.tags.split %}
+                            <a href="{% url 'community:discussion_list' %}?tag={{ tag }}" class="tag">{{ tag }}</a>
+                            {% endfor %}
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <div class="discussion-content">
+                {{ discussion.content|linebreaks }}
+            </div>
+
+            <div class="discussion-actions">
+                {% if user.is_authenticated %}
+                <button class="btn btn-like {% if user_liked %}liked{% endif %}" data-discussion-id="{{ discussion.id }}">
+                    <span class="like-icon">❤</span>
+                    <span class="like-count">{{ discussion.likes.count }}</span>
+                </button>
+                {% endif %}
+                <a href="{% url 'community:discussion_list' %}" class="btn btn-outline">返回列表</a>
+            </div>
+        </div>
+
+        <!-- 评论区 -->
+        <div class="comments-section">
+            <h3 class="section-title">评论 ({{ comments.count }})</h3>
+            
+            {% if user.is_authenticated %}
+            <div class="comment-form">
+                <form method="post" action="{% url 'community:add_comment' discussion.id %}" class="comment-form-inner">
+                    {% csrf_token %}
+                    <textarea name="content" placeholder="写下你的评论..." class="comment-input" required></textarea>
+                    <button type="submit" class="btn btn-primary">发表评论</button>
+                </form>
+            </div>
+            {% else %}
+            <div class="login-prompt">
+                <p>请 <a href="{% url 'auth-login' %}">登录</a> 后发表评论</p>
+            </div>
+            {% endif %}
+
+            <div class="comments-list">
+                {% for comment in comments %}
+                <div class="comment-item" data-comment-id="{{ comment.id }}">
+                    <div class="comment-header">
+                        <span class="comment-author">
+                            <a href="{% url 'community:user_profile' comment.author.username %}">
+                                {{ comment.author.username }}
+                            </a>
+                        </span>
+                        <span class="comment-date">{{ comment.created_at|date:"M d, Y H:i" }}</span>
+                    </div>
+                    <div class="comment-content">
+                        {{ comment.content|linebreaks }}
+                    </div>
+                </div>
+                {% empty %}
+                <div class="empty-comments">
+                    <p>暂无评论，成为第一个评论的人吧！</p>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // 点赞功能
+    const likeButtons = document.querySelectorAll('.btn-like');
+    likeButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const discussionId = this.dataset.discussionId;
+            fetch(`/community/discussions/${discussionId}/like/`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+                },
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    const likeCount = this.querySelector('.like-count');
+                    likeCount.textContent = data.like_count;
+                    
+                    if (data.liked) {
+                        this.classList.add('liked');
+                    } else {
+                        this.classList.remove('liked');
+                    }
+                }
+            });
+        });
+    });
+
+    // 评论表单提交
+    const commentForm = document.querySelector('.comment-form form');
+    if (commentForm) {
+        commentForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(this);
+            fetch(this.action, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                },
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // 添加新评论到列表
+                    const commentsList = document.querySelector('.comments-list');
+                    const newComment = document.createElement('div');
+                    newComment.className = 'comment-item';
+                    newComment.dataset.commentId = data.comment.id;
+                    newComment.innerHTML = `
+                        <div class="comment-header">
+                            <span class="comment-author">${data.comment.author}</span>
+                            <span class="comment-date">${data.comment.created_at}</span>
+                        </div>
+                        <div class="comment-content">${data.comment.content}</div>
+                    `;
+                    commentsList.appendChild(newComment);
+                    
+                    // 清空表单
+                    this.querySelector('textarea').value = '';
+                    
+                    // 更新评论数量
+                    const commentCount = document.querySelector('.section-title');
+                    const currentCount = parseInt(commentCount.textContent.match(/\d+/)[0]);
+                    commentCount.textContent = `评论 (${currentCount + 1})`;
+                }
+            });
+        });
+    }
+});
+</script>
+{% endblock %} 
